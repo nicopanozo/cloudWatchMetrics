@@ -43,7 +43,48 @@ resource "aws_cloudwatch_metric_alarm" "cpu_alarm" {
   alarm_description = "This metric monitors EC2 CPU utilization"
 }
 
+#creamos un panel enviando los datos como un objeto json
+resource "aws_cloudwatch_dashboard" "main" {
+  dashboard_name = "my-dashboard"
 
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+
+        properties = {
+          metrics = [
+            [
+              "AWS/EC2",
+              "CPUUtilization",
+              "InstanceId",
+              "i-0f23e30ac308147f8"
+            ]
+          ]
+          period = 300
+          stat   = "Average"
+          region = "us-east-1"
+          title  = "EC2 Instance CPU"
+        }
+      },
+      {
+        type   = "text"
+        x      = 0
+        y      = 7
+        width  = 3
+        height = 3
+
+        properties = {
+          markdown = "Hello world"
+        }
+      }
+    ]
+  })
+}
 /*En el código no se crea explícitamente una métrica de CloudWatch, 
 ya que Terraform no requiere la creación de métricas de forma independiente,
  sino que las crea automáticamente cuando se configura una alarma.
