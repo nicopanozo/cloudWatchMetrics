@@ -1,21 +1,50 @@
-# Crear una instancia de EC2
+### Nicolas Panozo Castellon - Cloudwatch Metrics Certificación 3
+/*
+### Creamos un topico SNS con el nombre "my-sns-topic"
+resource "aws_sns_topic" "sns_topic" {
+  name = "my-sns-topic"
+}
+
+### Creamos la suscripción para el email "nicopanozoc@gmail.com"
+resource "aws_sns_topic_subscription" "sns_topic_subscription" {
+  topic_arn = aws_sns_topic.sns_topic.arn
+  protocol  = "email"
+  endpoint  = "nicopanozoc@gmail.com"
+}
+*/
+
+### Creamos la instancia EC2 especificando datos como AMI, instance type, and subnet ID
 resource "aws_instance" "example" {
   ami           = "ami-0c94855ba95c71c99"
-  instance_type = "t2.micro"
+  instance_type = "t3.large"
   subnet_id     = "subnet-06200033affd5e04f"
   tags = {
-    Name = "ec2-example-instance1"
+    Name = "ec2-cloudwatch"
   }
 }
-resource "aws_cloudwatch_metric_alarm" "foobar" {
-  alarm_name                = "terraform-test-foobar5"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = 2
-  metric_name               = "CPUUtilization"
-  namespace                 = "AWS/EC2"
-  period                    = 120
-  statistic                 = "Average"
-  threshold                 = 70
-  alarm_description         = "This metric monitors ec2 cpu utilization"
-  insufficient_data_actions = []
+
+# Creamos la alarma para monitorear la "CPU utilization" de la instancia EC2
+resource "aws_cloudwatch_metric_alarm" "cpu_alarm" {
+  alarm_name          = "ec2-cpu-alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "70"
+  actions_enabled     = true
+
+  # Indicamos las dimensiones de la CloudWatch metric que será monitorizada
+  dimensions = {
+    InstanceId = aws_instance.example.id
+  }
+
+  alarm_description = "This metric monitors EC2 CPU utilization"
 }
+
+
+/*En el código no se crea explícitamente una métrica de CloudWatch, 
+ya que Terraform no requiere la creación de métricas de forma independiente,
+ sino que las crea automáticamente cuando se configura una alarma.
+Por lo tanto, al crear el recurso de alarma, Terraform automáticamente crea la métrica correspondiente en CloudWatch.*/

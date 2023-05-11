@@ -3,3 +3,5 @@
 *.tfvars
 .terraform
 .terraform.lock.hcl
+prueba1.tf
+prueba2.tf
